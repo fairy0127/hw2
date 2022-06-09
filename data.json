@@ -1,0 +1,11 @@
+{
+    "nodes": 
+    [{"id": "Michael Scott"}, 
+     {"id": "Jim Halpert"}, 
+     {"id": "Pam Beasley"}
+    ], 
+    "links": 
+    [{"source": "Michael Scott", "target": "Jim Halpert", "value": 50}, 
+     {"source": "Michael Scott", "target": "Pam Beasley", "value": 25}
+    ]
+  }

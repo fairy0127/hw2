@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<head>
+  <meta charset = "UTF-8">
+  <link rel = "stylesheet" type = "text/css" href = "network.css?<?php echo time(); ?>"/>
+</head>
+<svg width="960" height="500"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="d3-tip.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) { return d.id; }))
+    .force("charge", d3.forceManyBody().strength(-1000))
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+d3.json("data.json", function(error, graph) {
+  if (error) throw error;
+
+  var color = d3.scaleSequential().domain([20,60]).interpolator(d3.interpolateBlues);
+
+  var tip = d3.tip()
+              .attr('class', 'd3-tip')
+              .offset([-10, 0])
+              .html(function(d) {
+                  return d.id
+                });
+  svg.call(tip);
+
+  var link = svg.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(graph.links)
+      .enter().append("line")
+      .style("stroke", function(d) { return color(d.value); });
+
+  var node = svg.append("g")
+      .attr("class", "nodes")
+      .selectAll("circle")
+      .data(graph.nodes)
+      .enter().append("circle")
+      .attr("r", 4)
+      .call(d3.drag()
+          .on("start", dragstart)
+          .on("drag", dragged)
+          .on("end", dragend))
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide)
+      .on("dblclick", releasenode);
+
+
+
+              function dragstart(d, i) {
+                  simulation.stop()
+              }
+						  function dragged(d) {
+  								d.fx = d3.event.x;
+  								d.fy = d3.event.y;
+							}
+              function dragend(d, i) {
+                  simulation.alpha(0.3).restart();
+              }
+              function releasenode(d) {
+                  d.fx = undefined;
+				  d.fy = undefined;
+              }
+
+
+
+
+
+  node.append("title")
+      .text(function(d) { return d.id; });
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.links);
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  }
+});
+
+</script>
